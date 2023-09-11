@@ -4,13 +4,14 @@ import RoundIconbtn from '../components/RoundIconbtn'
 import { useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
+
 export default intro = ({onfinish}) => {
     let [name,setName] = useState('')
     
     let handleSubmit = async () => {
         let user ={name: name}
        await AsyncStorage.setItem('user_Name',JSON.stringify(user))
-       console.warn("amama")
+       if(onfinish) onfinish()
     }
     return (
         <View style={styles.container}>
@@ -19,6 +20,7 @@ export default intro = ({onfinish}) => {
             <TextInput  style={styles.TextInput} placeholder='Enter Name Here' onChangeText={(text)=>setName(text)} />
             {
                 name.trim().length>3 ? <RoundIconbtn name={'arrowright'} color={'#dbb2ff'} size={20} onPress={handleSubmit} />:null
+                
             }
         </View>
     )

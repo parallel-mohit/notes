@@ -1,13 +1,31 @@
 import { StatusBar } from 'expo-status-bar'
 import { useEffect, useState } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, FlatList } from 'react-native'
 import SearchBar from '../components/SearchBar'
 import RoundIconbtn from '../components/RoundIconbtn'
+import NoteInputModal from '../components/NoteInputModal'
+import Note from '../components/Note'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
-export default Notes_Screen = ({ user }) => {
+export default Notes_Screen = ({ user,navigation }) => {
+   let [notes,setNotes] =useState([])
     let [greet, setGreet] = useState('Evening')
-    function onPress() {
+    let [display,setDisplay] = useState(false)
+    let onsubmit= async (title,desc)=> {
+        let note={id:Date.now(),title,desc,time:Date.now()}
+        let updatedNotes = [...notes,note]
+        // console.log(note +"a")
+        setNotes(updatedNotes)
+        await AsyncStorage.setItem('notes',JSON.stringify(updatedNotes))
 
+    }
+    let findNotes = async ()=>{
+       let result= await AsyncStorage.getItem('notes')
+       console.log(result+'b')
+       if(result !== null) setNotes(JSON.parse(result))
+    }
+    let onClose = () => {
+        setDisplay(false)
     }
     function greetEvent() {
         let hrs = new Date().getHours();
@@ -15,6 +33,8 @@ export default Notes_Screen = ({ user }) => {
         else if (hrs === 1 || hrs < 17) return setGreet('Afternoon')
     }
     useEffect(() => {
+        // AsyncStorage.clear()/
+        findNotes()
         greetEvent()
     }, [])
     return (
@@ -23,14 +43,26 @@ export default Notes_Screen = ({ user }) => {
             <View style={styles.mainContainer}>
                 <View style={styles.container}>
                     <Text style={styles.textIntro}>{`Good ${greet},`}</Text>
-                    <Text style={styles.textIntroName}> {user.name} </Text>
+                    <Text style={styles.textIntroName}> {user} </Text>
                 </View>
                 <SearchBar />
-                <View style={[StyleSheet.absoluteFillObject, styles.addNotesTextContainer]}>
+                <FlatList 
+                numColumns={2}
+                data={notes} keyExtractor={item =>item.id.toString()}
+                renderItem={({item})=><Note item={item} navigation={navigation} 
+                 />}/>
+
+                {
+                    (!notes.length) ? <View style={[StyleSheet.absoluteFillObject, styles.addNotesTextContainer]}>
                     <Text style={styles.addNotesText}>Add notes</Text>
-                    <RoundIconbtn name={'plus'} color={'orange'} size={34} style={styles.addbtn} onPress={onPress} />
-                </View>
+                    
+                </View>:null
+                }
+                <RoundIconbtn name={'plus'} color={'orange'} size={34} style={styles.addbtn} onPress={()=>setDisplay(true)} />
             </View>
+            {
+           display? <NoteInputModal visible={display} onClose={onClose} onsubmit={onsubmit}/>:null
+}
         </>
     )
 }
