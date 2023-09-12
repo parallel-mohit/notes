@@ -1,29 +1,43 @@
 import { StatusBar } from 'expo-status-bar'
-import { useEffect, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
 import { View, Text, StyleSheet, FlatList } from 'react-native'
 import SearchBar from '../components/SearchBar'
 import RoundIconbtn from '../components/RoundIconbtn'
 import NoteInputModal from '../components/NoteInputModal'
 import Note from '../components/Note'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useNotes } from '../context/NoteProvider'
 
+// let MyContext = createContext()
 export default Notes_Screen = ({ user,navigation }) => {
-   let [notes,setNotes] =useState([])
+   let [searchQuery,setSearchQuery]=useState('')
+   let {notes,setNotes,findNotes} =useNotes()
     let [greet, setGreet] = useState('Evening')
     let [display,setDisplay] = useState(false)
     let onsubmit= async (title,desc)=> {
         let note={id:Date.now(),title,desc,time:Date.now()}
         let updatedNotes = [...notes,note]
-        // console.log(note +"a")
         setNotes(updatedNotes)
         await AsyncStorage.setItem('notes',JSON.stringify(updatedNotes))
 
     }
-    let findNotes = async ()=>{
-       let result= await AsyncStorage.getItem('notes')
-       console.log(result+'b')
-       if(result !== null) setNotes(JSON.parse(result))
+    let handleOnSearchInput = (text)=>{
+        setSearchQuery(text)
+        if(!text.trim()){
+            setSearchQuery('')
+            setNotes(findNotes)
+        }
+       let filterNotes= notes.filter(note=>{
+            if(note.title.toLowerCase().includes(text.toLowerCase())){
+                return note;
+            }
+        })
+        if(filterNotes.length){
+            setNotes([...filterNotes])
+        }
     }
+    
+    
     let onClose = () => {
         setDisplay(false)
     }
@@ -32,11 +46,18 @@ export default Notes_Screen = ({ user,navigation }) => {
         if (hrs === 0 || hrs < 12) return setGreet('Morning')
         else if (hrs === 1 || hrs < 17) return setGreet('Afternoon')
     }
+    let openNote = note => {
+        navigation.navigate('NoteDetail',{ note } )
+    }
     useEffect(() => {
         // AsyncStorage.clear()/
-        findNotes()
+        
         greetEvent()
     }, [])
+    // useEffect(()=>{
+    //
+    // },[notes])
+    
     return (
         <>
             <StatusBar backgroundColor='orange' />
@@ -45,11 +66,11 @@ export default Notes_Screen = ({ user,navigation }) => {
                     <Text style={styles.textIntro}>{`Good ${greet},`}</Text>
                     <Text style={styles.textIntroName}> {user} </Text>
                 </View>
-                <SearchBar />
+                <SearchBar value={searchQuery} onChangeText={handleOnSearchInput}/>
                 <FlatList 
                 numColumns={2}
                 data={notes} keyExtractor={item =>item.id.toString()}
-                renderItem={({item})=><Note item={item} navigation={navigation} 
+                renderItem={({item})=><Note item={item} onPress={()=>openNote(item)}
                  />}/>
 
                 {

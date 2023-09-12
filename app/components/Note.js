@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native'
 
-export default Note = ({ item,navigation }) => {
+export default Note = ({ item,onPress }) => {
     
-    let { title, desc } = item;
+    const { title, desc } = item;
     return (
-        <TouchableOpacity style={styles.container} onPress={()=>navigation.navigate('noteDetail',{item})} navigation={navigation}>
+        <TouchableOpacity style={styles.container} onPress={onPress} >
             <Text style={[styles.notesContainer,styles.titleText]} numberOfLines={1}>{title}</Text>
             <Text numberOfLines={3} style={styles.descText}>{desc}</Text>
         </TouchableOpacity>

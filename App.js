@@ -6,6 +6,7 @@ import Notes_Screen from './app/screens/Notes_Screen'
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import NoteDetail from './app/components/NoteDetail'
+import NoteProvider from './app/context/NoteProvider'
 
 let Stack = createNativeStackNavigator();
 export default App = () => {
@@ -25,16 +26,21 @@ export default App = () => {
     findUser()
   }, []
   )
-  let RenderNotesScreen=(props)=><Notes_Screen {...props} user={user}/>
+  let RenderNotesScreen = (props) => <Notes_Screen {...props} user={user} />
 
   if (user === '') return <Intro onfinish={findUser} />;
 
-  return <NavigationContainer>
-    <Stack.Navigator screenOptions={{headerTitle:'',headerTransparent:true}} >
-      <Stack.Screen name='notes_screen' component={RenderNotesScreen} />
-      <Stack.Screen name='noteDetail' component={NoteDetail} options={{}}/>
-    </Stack.Navigator>
+  return(
+  <NavigationContainer>
+    <NoteProvider>
+      <Stack.Navigator screenOptions={{ headerTitle: '', headerTransparent: true }} >
+        <Stack.Screen name='notes_screen' component={RenderNotesScreen} />
+        <Stack.Screen name='NoteDetail' component={NoteDetail} options={{}} />
+      </Stack.Navigator>
+    </NoteProvider>
   </NavigationContainer>
+  )
+
 
 }
 
